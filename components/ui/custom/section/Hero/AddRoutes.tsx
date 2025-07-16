@@ -1,7 +1,7 @@
 "use client";
 
 import { Work_Sans } from "next/font/google";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,9 +20,28 @@ const workSans = Work_Sans({
   weight: ["400"],
 });
 
-export default function AddRoutes() {
+type Route = {
+  route: string;
+  status?: 'pending' | 'success';
+};
+
+// Then update your prop type:
+export default function AddRoutes({ setRouteList }: { setRouteList: React.Dispatch<React.SetStateAction<Route[]>> }){
+
   const [routes, setRoutes] = useState([""]);
   const [domain, setDomain] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const { protocol, hostname, port } = window.location;
+
+      const isLocalhost = hostname === "localhost";
+        const fullDomain = isLocalhost && port ? `${protocol}//${hostname}:${port}` : hostname;
+
+      setDomain(fullDomain);
+    }
+  }, []);
+  const [open, setOpen] = useState(false);
 
   const handleRouteChange = (index: number, value: string) => {
     const updated = [...routes];
@@ -41,12 +60,15 @@ export default function AddRoutes() {
   };
 
   const handleRouteAnalysis = async () => {
-    await analyzeRoutes(routes)
+    setOpen(false)
+    setRouteList(routes.map(route => ({ route, status: 'pending' })));
+    const routeData = await analyzeRoutes(routes, domain);
+    setRouteList(routeData.map(route => ({ ...route, status: 'success' })));
   }
 
   return (
     <div className={workSans.className}>
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger>
           <div className="cursor-pointer hover:bg-gray-100 px-4 py-2 border border-gray-200 w-[150px] font-bold">
             Add routes
@@ -64,7 +86,7 @@ export default function AddRoutes() {
           <div className="mt-4">
             <label className="text-sm font-medium text-gray-700">Domain Name</label>
             <Input
-              className="mt-1"
+              className="mt-1 cursor-not-allowed"
               placeholder="https://example.com"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
@@ -106,7 +128,7 @@ export default function AddRoutes() {
               className="w-full mt-4"
               onClick={handleRouteAnalysis}
             >
-              Save Routes
+              Analyze Routes
             </Button>
           </div>
         </DialogContent>

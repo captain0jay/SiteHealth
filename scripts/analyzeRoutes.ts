@@ -1,96 +1,167 @@
-type PageMetrics = {
+type ScreenSize = { label: string; width: number; height: number };
+
+type RouteReport = {
   route: string;
+  screen: string;
+  title: string;
+  description: string;
   loadTime: number;
+  fcp?: number;
+  lcp?: number;
+  cls?: number;
   networkType: string;
-  contentSeen: number;
-  totalContent: number;
+  images: { src: string; width: number; height: number; alt: string }[];
+  totalImages: number;
+  visibleElements: number;
+  totalElements: number;
+  wordCount: number;
+  headings: Record<string, number>;
+  externalLinks: number;
+  internalLinks: number;
+  fontCount: number;
+  scriptCount: number;
   score: number;
 };
 
-export default async function analyzeRoutes(routes: string[], baseUrl: string = "http://localhost:3000") {
-  const results: PageMetrics[] = [];
+const screenSizes: ScreenSize[] = [
+  { label: "mobile", width: 375, height: 812 },
+  { label: "tablet", width: 768, height: 1024 },
+  { label: "desktop", width: 1440, height: 900 },
+];
+
+export default async function analyzeRoutes(routes: string[], baseUrl = window.location.origin) {
+  const allReports: RouteReport[] = [];
 
   for (const route of routes) {
-    const fullUrl = `${baseUrl}${route}`;
+    for (const screen of screenSizes) {
+      const fullUrl = `${baseUrl}${route}`;
 
-    const iframe = document.createElement("iframe");
-    iframe.src = fullUrl;
-    iframe.style.width = "100%";
-    iframe.style.height = "1000px";
-    iframe.style.visibility = "hidden";
-    document.body.appendChild(iframe);
+      const iframe = document.createElement("iframe");
+      iframe.src = fullUrl;
+      iframe.style.width = `${screen.width}px`;
+      iframe.style.height = `${screen.height}px`;
+      iframe.style.visibility = "hidden";
+      iframe.style.position = "absolute";
+      document.body.appendChild(iframe);
 
-    const metrics = await new Promise<PageMetrics>((resolve) => {
-      const startTime = performance.now();
+      const report: RouteReport = await new Promise((resolve) => {
+        const startTime = performance.now();
 
-      iframe.onload = () => {
-        const endTime = performance.now();
-        const loadTime = endTime - startTime;
+        iframe.onload = () => {
+          const loadTime = performance.now() - startTime;
+          const doc = iframe.contentDocument!;
+          const win = iframe.contentWindow!;
 
-        // Simulate scrolling
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (!iframeDoc) return resolve({
-          route,
-          loadTime: -1,
-          networkType: "unknown",
-          contentSeen: 0,
-          totalContent: 0,
-          score: 0,
-        });
+          const title = doc.title;
+          const description = doc.querySelector('meta[name="description"]')?.getAttribute("content") || "";
 
-        const observedElements = Array.from(
-          iframeDoc.querySelectorAll("img, div, section, article")
-        );
+          const networkType = (navigator as any).connection?.effectiveType || "unknown";
 
-        let visibleCount = 0;
+          const text = doc.body.innerText || "";
+          const wordCount = text.trim().split(/\s+/).length;
 
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                visibleCount++;
-              }
-            });
-          },
-          { root: iframe, threshold: 0.1 }
-        );
+          const headings: Record<string, number> = {};
+          ["h1", "h2", "h3", "h4"].forEach(h => {
+            headings[h] = doc.querySelectorAll(h).length;
+          });
 
-        observedElements.forEach((el) => observer.observe(el));
+          const links = Array.from(doc.querySelectorAll("a"));
+          const internalLinks = links.filter(a => a.href.startsWith(baseUrl)).length;
+          const externalLinks = links.length - internalLinks;
 
-        let scrollY = 0;
-        const scrollStep = 300;
-        const scrollInterval = setInterval(() => {
-          if (scrollY < iframe.contentWindow!.document.body.scrollHeight) {
-            scrollY += scrollStep;
-            iframe.contentWindow!.scrollTo({ top: scrollY, behavior: "smooth" });
-          } else {
-            clearInterval(scrollInterval);
-            observer.disconnect();
+          const scripts = doc.querySelectorAll("script").length;
+          const fonts = performance.getEntriesByType("resource").filter((r) =>
+            r.name.match(/\.(woff|woff2|ttf|otf)/)
+          ).length;
 
-            const total = observedElements.length;
-            const score = computeScore(loadTime, visibleCount, total);
-            const networkType = (navigator as any).connection?.effectiveType || "unknown";
+          const images = Array.from(doc.querySelectorAll("img")).map((img) => ({
+            src: img.currentSrc || img.src,
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+            alt: img.alt || "",
+          }));
 
-            resolve({
-              route,
-              loadTime: Math.round(loadTime),
-              networkType,
-              contentSeen: visibleCount,
-              totalContent: total,
-              score,
-            });
+          const observedElements = Array.from(doc.querySelectorAll("img, div, section, article"));
+          let visibleCount = 0;
 
-            setTimeout(() => document.body.removeChild(iframe), 1000); // cleanup
-          }
-        }, 500);
-      };
-    });
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) visibleCount++;
+              });
+            },
+            { root: iframe, threshold: 0.1 }
+          );
+          observedElements.forEach(el => observer.observe(el));
 
-    results.push(metrics);
+          // Simulate scroll
+          let scrollY = 0;
+          const scrollStep = 300;
+          const scrollInterval = setInterval(() => {
+            if (scrollY < doc.body.scrollHeight) {
+              scrollY += scrollStep;
+              win.scrollTo({ top: scrollY, behavior: "smooth" });
+            } else {
+              clearInterval(scrollInterval);
+              observer.disconnect();
+
+              // FCP, LCP, CLS (basic version)
+              let fcp: number | undefined;
+              let lcp: number | undefined;
+              let cls: number | undefined;
+              const perfObserver = new PerformanceObserver((list) => {
+                for (const entry of list.getEntries()) {
+                  if (entry.entryType === "paint" && entry.name === "first-contentful-paint") {
+                    fcp = entry.startTime;
+                  } else if (entry.entryType === "largest-contentful-paint") {
+                    lcp = entry.startTime;
+                  } else if (entry.entryType === "layout-shift") {
+                    const e = entry as PerformanceEntry & { value: number };
+                    cls = (cls || 0) + e.value;
+                  }
+                }
+              });
+              perfObserver.observe({ type: "paint", buffered: true });
+              perfObserver.observe({ type: "largest-contentful-paint", buffered: true });
+              perfObserver.observe({ type: "layout-shift", buffered: true });
+
+              const score = computeScore(loadTime, visibleCount, observedElements.length);
+
+              document.body.removeChild(iframe);
+
+              resolve({
+                route,
+                screen: screen.label,
+                title,
+                description,
+                loadTime: Math.round(loadTime),
+                fcp: fcp ? Math.round(fcp) : undefined,
+                lcp: lcp ? Math.round(lcp) : undefined,
+                cls: cls ? Math.round(cls * 100) / 100 : undefined,
+                networkType,
+                totalImages: images.length,
+                images,
+                totalElements: observedElements.length,
+                visibleElements: visibleCount,
+                wordCount,
+                headings,
+                internalLinks,
+                externalLinks,
+                fontCount: fonts,
+                scriptCount: scripts,
+                score,
+              });
+            }
+          }, 300);
+        };
+      });
+
+      allReports.push(report);
+    }
   }
 
-  console.table(results);
-  return results;
+  console.table(allReports);
+  return allReports;
 }
 
 function computeScore(loadTime: number, visible: number, total: number): number {
