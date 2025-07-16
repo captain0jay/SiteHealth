@@ -36,7 +36,7 @@ export default function AddRoutes({ setRouteList }: { setRouteList: React.Dispat
       const { protocol, hostname, port } = window.location;
 
       const isLocalhost = hostname === "localhost";
-        const fullDomain = isLocalhost && port ? `${protocol}//${hostname}:${port}` : hostname;
+      const fullDomain = isLocalhost && port ? `${protocol}//${hostname}:${port}` : `${protocol}//${hostname}`;
 
       setDomain(fullDomain);
     }
