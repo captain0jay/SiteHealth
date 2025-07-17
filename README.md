@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌐 SiteHealth
 
-## Getting Started
+[Live Site 🌍](https://site-health-tsnb.vercel.app/)
 
-First, run the development server:
+**SiteHealth** helps you monitor and analyze your website’s page load performance and other key metrics — all in one place. It ensures you can **detect**, **diagnose**, and **optimize** issues *before* they impact user experience.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Add any route from your website to analyze
+- Track core web vitals like FCP, LCP, CLS
+- Visual and content stats including headings, links, images, and more
+- Quick performance scoring for each route
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🚀 Getting Started
 
-To learn more about Next.js, take a look at the following resources:
+### ✅ Online Demo
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Go to: [SiteHealth Online](https://site-health-tsnb.vercel.app/)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Click **“Add Route”**
+2. Enter the route you want to check (e.g., `/about` or `/careers`)
+3. Ensure the route is **hosted under the same domain**
+4. Example test routes you can try:
+   - `/about`
+   - `/careers`
 
-## Deploy on Vercel
+### 🎥 Video Guide
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[Watch Instructional Loom Video](#) *(Insert actual Loom link here)*
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🧪 Run Locally
+
+1. Clone the repo  
+   ```bash
+   git clone <your-repo-url>
+   cd sitehealth
+````
+
+2. Install dependencies
+
+   ```bash
+   npm install
+   ```
+
+3. Start the development server
+
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 📊 Route Report Structure
+
+Here’s what each metric in the report represents:
+
+| Field             | Description                                                      |
+| ----------------- | ---------------------------------------------------------------- |
+| `route`           | The path of the page being analyzed (e.g., `/about`)             |
+| `screen`          | Viewport size used during the test                               |
+| `title`           | `<title>` of the page                                            |
+| `description`     | Meta description from `<meta name="description">`                |
+| `loadTime`        | Total time (ms) it takes to load the page                        |
+| `fcp`             | First Contentful Paint (ms) — when the first text/image appears  |
+| `lcp`             | Largest Contentful Paint (ms) — when the largest content appears |
+| `cls`             | Cumulative Layout Shift — layout stability metric                |
+| `networkType`     | Type of network connection used (e.g., `4g`, `3g`)               |
+| `images`          | List of images with their `src`, dimensions, and alt text        |
+| `totalImages`     | Number of images on the page                                     |
+| `visibleElements` | Number of elements visible in the viewport                       |
+| `totalElements`   | Total number of elements in the DOM                              |
+| `wordCount`       | Total word count on the page                                     |
+| `headings`        | Breakdown of headings (`h1`, `h2`, etc.)                         |
+| `externalLinks`   | Number of external `<a>` links                                   |
+| `internalLinks`   | Number of internal `<a>` links                                   |
+| `fontCount`       | Number of font files used                                        |
+| `scriptCount`     | Number of script files on the page                               |
+| `score`           | Overall performance score (0–100)                                |
+
+---
+
+## 🖼️ Sample Screenshots
+
+> Example test reports from `/about` and `/careers` routes:
+
+![Report Screenshot 1](./screenshots/about-report.png)
+![Report Screenshot 2](./screenshots/careers-report.png)
+
+---
+
+## 🛠️ Tech Stack
+
+* React
+* Next.js
+* Lighthouse Metrics
+* Puppeteer
+
+---
+
+## 📬 Feedback / Contribute
+
+Feel free to open issues or contribute by submitting a pull request!
