@@ -38,13 +38,21 @@ interface RowItemBoxProps {
 };
 
 export default function RowItemBox(props: RowItemBoxProps) {
+  const rawSrc = props?.images?.[0]?.src;
+  const isOptimizedImage = rawSrc?.includes('/_next/image');
 
   return (
     <div className={workSans.className}>
       <div className="group w-full h-16 flex items-center text-xl font-medium border border-gray-200 px-4 hover:underline">
         <div className="flex items-center">
           <div className="pr-4">
-            <Image src={props?.images?.[0]?.src || '/page.svg'} alt={props?.images?.[0]?.alt || 'icon'} width={40} height={40} className="rounded-md" />
+            <Image
+              src={isOptimizedImage ? '/page.svg' : rawSrc || '/page.svg'}
+              alt={props?.images?.[0]?.alt || 'icon'}
+              width={40}
+              height={40}
+              className="rounded-md"
+            />  
           </div>
           {props?.route}
           <div className="bg-lime-300 ml-2 px-1 transform rotate-1">{props.score}%</div>
