@@ -30,7 +30,7 @@ Go to: [SiteHealth Online](https://site-health-tsnb.vercel.app/)
 
 ### 🎥 Video Guide
 
-[Watch Instructional Loom Video](#) *(Insert actual Loom link here)*
+https://www.loom.com/share/3d3e68d1ea764bfcbb3eab2b8d6f6e63?sid=da2653c8-ad55-46c7-bca6-dc16c2b693c1
 
 ---
 
@@ -40,7 +40,7 @@ Go to: [SiteHealth Online](https://site-health-tsnb.vercel.app/)
    ```bash
    git clone <your-repo-url>
    cd sitehealth
-````
+   ````
 
 2. Install dependencies
 
@@ -96,10 +96,8 @@ Here’s what each metric in the report represents:
 
 ## 🛠️ Tech Stack
 
-* React
 * Next.js
-* Lighthouse Metrics
-* Puppeteer
+* Frontend API used ( BackgroundTasks API, Intersection observer api, Network information api )
 
 ---
 
