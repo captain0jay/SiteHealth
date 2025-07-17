@@ -6,6 +6,13 @@
 
 ---
 
+## 🛠️ Tech Stack
+
+* Next.js
+* Frontend API used ( BackgroundTasks API, Intersection observer api, Network information api )
+  
+---
+
 ## ✨ Features
 
 - Add any route from your website to analyze
@@ -89,15 +96,11 @@ Here’s what each metric in the report represents:
 
 > Example test reports from `/about` and `/careers` routes:
 
-![Report Screenshot 1](./screenshots/about-report.png)
-![Report Screenshot 2](./screenshots/careers-report.png)
-
----
-
-## 🛠️ Tech Stack
-
-* Next.js
-* Frontend API used ( BackgroundTasks API, Intersection observer api, Network information api )
+![Report Screenshot 1](./public/ss01.png)
+![Report Screenshot 2](./public/ss02.png)
+![Report Screenshot 3](./public/ss03.png)
+![Report Screenshot 4](./public/ss04.png)
+![Report Screenshot 5](./public/ss05.png)
 
 ---
 
